@@ -1,12 +1,10 @@
-from citycom_mv_api.models.Address import Address
-
-
-from mashumaro import DataClassDictMixin
-
-
 from dataclasses import dataclass, field
 from typing import Any, List, Optional
 from uuid import UUID
+
+from mashumaro import DataClassDictMixin
+
+from citycom_mv_api.models.Address import Address
 
 
 @dataclass
@@ -22,4 +20,6 @@ class MeterProperty(DataClassDictMixin):
     property_number: Optional[str] = field(default=None, metadata={'alias': 'propertyNumber'})
     region_id: int = field(default=0, metadata={'alias': 'regionId'})
     parent_properties: Optional[List[Any]] = field(default=None, metadata={'alias': 'parentProperties'})
-    negative_calculation_in_consumption_circle: bool = field(default=False, metadata={'alias': 'negativeCalculationInConsumptionCircle'})
+    negative_calculation_in_consumption_circle: bool = field(default=False,
+                                                              metadata={'alias': 'negativeCalculationInConsumptionCircle'
+                                                                        })
