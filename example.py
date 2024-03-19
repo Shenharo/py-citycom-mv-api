@@ -38,7 +38,6 @@ async def main():
 
         print("access_token: " + token.access_token)
 
-        # client.manual_login()
         customer = await client.get_customer()
         print(customer)
 

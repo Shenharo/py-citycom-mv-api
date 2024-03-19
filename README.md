@@ -5,21 +5,49 @@ A python wrapper for citycom_mv api
 ## Module Usage
 
 ```python
-from citycom_mv_api import citycom_mv_client as citycom
+import asyncio
+import os
 
-client = citycom.citycomClient("X@citycom-mv.com","password")
+import aiohttp
+from loguru import logger
+
+from citycom_mv_api.citycom_mv_client import CityComMVClient
+from citycom_mv_api.login import LoginError
+from citycom_mv_api.models.exceptions import CitycomError
+
+session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), timeout=aiohttp.ClientTimeout(total=10))
 try:
-    await client.login()  
-except iec.exceptions.LoginError as err:
-    logger.error(f"Failed Login: (Code {err.code}): {err.error}")
-    raise
+    # Example of usage
+    client = CityComMVClient("XXXX@citycom-mv.com", "YYY", session)
 
-customer = await client.get_customer_information()
-print(customer)
+    token_json_file = "token.json"
+    if os.path.exists(token_json_file):
+        await client.load_token_from_file(token_json_file)
+    else:
+        try:
+            await client.login()
+            await client.save_token_to_file(token_json_file)
+        except LoginError as err:
+            logger.error(f"Failed Login: (Code {err.code}): {err.error}")
+            raise
 
-meters = await client.get_meters()
-for meter in meters:
-    print(meter)
+    # refresh token example- currently not implemented, it just logins again
+    token = client.get_token()
+    await client.check_token()
+    new_token = client.get_token()
+    if token != new_token:
+        print("Token refreshed")
+        await client.save_token_to_file(token_json_file)
 
-reading = await client.get_last_meter_reading(meters[0].meter_id)
-print(reading)
+    print("access_token: " + token.access_token)
+
+    customer = await client.get_customer()
+    print(customer)
+
+    reading = await client.get_last_meter_reading(customer.properties[0].meters[0].meter_id)
+    print(reading)
+
+except CitycomError as err:
+    logger.error(f"Error: (Code {err.code}): {err.error}")
+finally:
+    await session.close()
