@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "citycom-mv-api"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python wrapper for citycom-mv water meters api"
 authors = ["shenharo"]
 license = "MIT"
@@ -14,11 +14,11 @@ keywords = ["python", "poetry", "api", "citcom","citcom-mv", "israel", "water", 
 [tool.poetry.dependencies]
 python = "^3.11"
 mashumaro = "^3.12"
-pyjwt = "^2.8.0"
 requests = "^2.31.0"
 pkce = "^1.0.3"
 aiohttp = "^3.9.1"
 aiofiles = "^23.2.1"
+cachetools="^5.3.3"
 loguru = "^0.7.2"
 pytz = "^2024.1"
 
