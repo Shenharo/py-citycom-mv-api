@@ -4,8 +4,8 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-APP_NAME="python-boilerplate-project"
-IMAGE_NAME="python-boilerplate-project"
+APP_NAME="citycom_mv_api"
+IMAGE_NAME="citycom_mv_api"
 VERSION="latest"
 MAIN_ENTRYPOINT="src/main.py"
 

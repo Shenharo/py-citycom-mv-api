@@ -13,6 +13,6 @@ RUN poetry install
 COPY . .
 
 FROM dependencies AS production
-COPY src src
-COPY settings.conf src
-COPY logging.conf src
+COPY citycom_mv_api src
+# COPY settings.conf src
+# COPY logging.conf src
