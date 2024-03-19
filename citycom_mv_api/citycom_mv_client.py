@@ -1,25 +1,22 @@
 import asyncio
 import atexit
-from datetime import datetime, timedelta
 from typing import Optional
 
 import aiohttp
-import jwt
 from aiohttp import ClientSession
 from loguru import logger
 
 from citycom_mv_api import data, login
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
-from citycom_mv_api.models.Property import Property
-from citycom_mv_api.models.Reading import MeterReadings
 from citycom_mv_api.models.exceptions import LoginError
 from citycom_mv_api.models.jwt import JWT
+from citycom_mv_api.models.Reading import MeterReadings
 
 
 class CityComMVClient:
     """citycom mv API Client."""
 
-    def __init__(self, username: str , password:str, session: Optional[ClientSession] = None):
+    def __init__(self, username: str, password: str, session: Optional[ClientSession] = None):
         """
         Initializes the class with the provided user ID and password and optionally logs in automatically.
 
@@ -29,7 +26,7 @@ class CityComMVClient:
         password (str): The password used to log in to the citycom mv website.
         automatically_login (bool): Whether to automatically log in the user. Default is False.
         """
-       
+
         if not session:
             session = aiohttp.ClientSession()
             atexit.register(self._shutdown)
@@ -38,8 +35,9 @@ class CityComMVClient:
 
         self.logged_in: bool = False  # Flag to indicate if the user is logged in
         self._token: JWT = JWT(
-            access_token="", refresh_token="", token_type="", expires_in=0)  # Token for authentication
-        self._user_name: str = username # User ID associated with the instance
+            access_token="", refresh_token="", token_type="", expires_in=0
+        )  # Token for authentication
+        self._user_name: str = username  # User ID associated with the instance
         self._password: str = password  # User passowrd with the instance
 
         self._login_response: Optional[str] = None  # Response from the login attempt
@@ -60,17 +58,10 @@ class CityComMVClient:
         :return: Customer data
         """
         await self.check_token()
-        customer = await data.get_customer(self._session, self._token)       
+        customer = await data.get_customer(self._session, self._token)
         return customer
 
-   
-
- 
-
-   
-
-    async def get_last_meter_reading(
-        self, meter_id: Optional[str] = None ) -> Optional[MeterReadings]:
+    async def get_last_meter_reading(self, meter_id: Optional[str] = None) -> Optional[MeterReadings]:
         """
         Retrieves a last meter reading for a specific contract and user.
         Args:
@@ -91,8 +82,6 @@ class CityComMVClient:
             return response
         return None
 
-    
-
     # ----------------
     # Login/Token Flow
     # ----------------
@@ -101,19 +90,16 @@ class CityComMVClient:
         """
         Login with the provided user and password.
         """
-        jwt_token = await login.do_login(
-            self._session, self._user_name, self._password
-        )
+        jwt_token = await login.do_login(self._session, self._user_name, self._password)
         self._token = jwt_token
         self.logged_in = True
-
 
     async def manual_login(self):
         """
         Logs the user in by obtaining an authorization token, setting the authorization header,
         and updating the login status and token attribute.
         """
-        token = await login.manual_authorization(self._session, self._user_name,self._password)
+        token = await login.manual_authorization(self._session, self._user_name, self._password)
         self.logged_in = True
         self._token = token
 
@@ -135,15 +121,13 @@ class CityComMVClient:
         else:
             raise LoginError(-1, "Invalid JWT token")
 
-
     async def check_token(self) -> bool:
         """
         Check the validity of the jwt.py token and refresh in the case of expired signature errors.
         """
-        should_refresh = False
-        if(login.is_expired(self._token) or login.is_about_to_expire(self._token)):
+        if login.is_expired(self._token) or login.is_about_to_expire(self._token):
             logger.debug("jwt.py token expired, refreshing token")
-            await login.do_login(self._session, self._user_name, self._password)       
+            await login.do_login(self._session, self._user_name, self._password)
         # elif login.is_about_to_expire(self._token):
         #     logger.debug("jwt.py token expired, refreshing token")
         #     self.logged_in = False
@@ -151,7 +135,7 @@ class CityComMVClient:
 
         return True
 
-    #citycom_mv_api returns invalid grant when called for a refresh token, so we just login again
+    # citycom_mv_api returns invalid grant when called for a refresh token, so we just login again
     async def refresh_token(self):
         """
         Refresh JWT token.
@@ -159,6 +143,7 @@ class CityComMVClient:
         self._token = await login.refresh_token(self._session, self._token)
         if self._token:
             self.logged_in = True
+
     async def load_token_from_file(self, file_path: str = "token.json"):
         """
         Load token from file.

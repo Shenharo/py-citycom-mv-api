@@ -13,12 +13,12 @@ HEADERS_NO_AUTH = {
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-site",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",  # noqa: E501
 }
 
 HEADERS_WITH_AUTH = HEADERS_NO_AUTH.copy()  # Make a copy of the original dictionary
 HEADERS_WITH_AUTH["Authorization"] = "Bearer 1234"
-HEADERS_WITH_AUTH["Cookie"] = "ARRAffinity=?; " "ARRAffinitySameSite=?;" " GCLB=?"
+HEADERS_WITH_AUTH["Cookie"] = "ARRAffinity=?; ARRAffinitySameSite=?; GCLB=?"
 
 TIMEZONE = pytz.timezone("Asia/Jerusalem")
 CITYCOM_MV_WEBSITE = "https://citycom-mv.com"

@@ -1,14 +1,12 @@
-""" Main IEC Python API module. """
+"""Main IEC Python API module."""
 
 import asyncio
-import concurrent.futures
 import os
-from datetime import datetime, timedelta
 
 import aiohttp
 from loguru import logger
 
-from citycom_mv_api.CityComMVClient import CityComMVClient
+from citycom_mv_api.citycom_mv_client import CityComMVClient
 from citycom_mv_api.login import LoginError
 from citycom_mv_api.models.exceptions import CitycomError
 
@@ -17,10 +15,10 @@ async def main():
     session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False), timeout=aiohttp.ClientTimeout(total=10))
     try:
         # Example of usage
-        client = CityComMVClient('XXXX@citycom-mv.com','YYY', session)
+        client = CityComMVClient("XXXX@citycom-mv.com", "YYY", session)
 
         token_json_file = "token.json"
-        if  os.path.exists(token_json_file):
+        if os.path.exists(token_json_file):
             await client.load_token_from_file(token_json_file)
         else:
             try:
@@ -46,8 +44,6 @@ async def main():
 
         reading = await client.get_last_meter_reading(customer.properties[0].meters[0].meter_id)
         print(reading)
-
-      
 
     except CitycomError as err:
         logger.error(f"Error: (Code {err.code}): {err.error}")
