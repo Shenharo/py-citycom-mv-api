@@ -1,5 +1,6 @@
 import asyncio
 import atexit
+import datetime
 from typing import Optional
 
 import aiohttp
@@ -7,10 +8,12 @@ from aiohttp import ClientSession
 from loguru import logger
 
 from citycom_mv_api import data, login
+from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
 from citycom_mv_api.models.exceptions import LoginError
 from citycom_mv_api.models.jwt import JWT
 from citycom_mv_api.models.Reading import MeterReadings
+from citycom_mv_api.models.TimePeriodOptions import TimePeriodOptions
 
 
 class CityComMVClient:
@@ -66,8 +69,7 @@ class CityComMVClient:
         Retrieves a last meter reading for a specific contract and user.
         Args:
             self: The instance of the class.
-            bp_number (str): The BP number of the meter.
-            contract_id (str): The contract ID associated with the meter.
+            meter_id (str): The id number of the meter.
         Returns:
             MeterReadings: The response containing the meter readings.
         """
@@ -80,8 +82,30 @@ class CityComMVClient:
         response = await data.get_last_meter_reading(self._session, self._token, meter_id)
         if response:
             return response
-        return None
 
+    async def get_historical_data(self,  meter_id: Optional[str] = None,
+                                 time_period: TimePeriodOptions = TimePeriodOptions.DAILY,
+                                 from_date: datetime =None,
+                                to_date: datetime= None
+                                 ) -> Optional[ConsumptionTimeSeries]:
+        """
+        Retrieves a last meter reading for a specific contract and user.
+        Args:
+            self: The instance of the class.
+            meter_id (str): The id number of the meter.
+        Returns:
+            MeterReadings: The response containing the meter readings.
+        """
+        await self.check_token()
+        if not meter_id:
+            meter_id = self._meter_id
+
+        assert meter_id, "meter id number must be provided"
+
+        response = await data.get_historical_data(self._session, self._token, meter_id,time_period,from_date,to_date)
+        if response:
+            return response
+        return None
     # ----------------
     # Login/Token Flow
     # ----------------
@@ -127,7 +151,7 @@ class CityComMVClient:
         """
         if login.is_expired(self._token) or login.is_about_to_expire(self._token):
             logger.debug("jwt.py token expired, refreshing token")
-            await login.do_login(self._session, self._user_name, self._password)
+            self._token=await login.do_login(self._session, self._user_name, self._password)
         # elif login.is_about_to_expire(self._token):
         #     logger.debug("jwt.py token expired, refreshing token")
         #     self.logged_in = False
