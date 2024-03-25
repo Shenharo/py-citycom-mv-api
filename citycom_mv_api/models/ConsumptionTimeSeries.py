@@ -47,12 +47,13 @@ class ConsumptionTimeSeries:
         """
         return [(item.date, item.value) for item in self.data]
 
-    def from_consumption_history_data(self, consumption_history_data : List[ConsumptionHistoryData]) :
+    def from_consumption_history_data(self, consumption_history_data: List[ConsumptionHistoryData]):
         """
         Converts consumption history data to a consumption time series.
 
         Args:
-            consumption_history_data (list): A list of ConsumptionHistoryData objects representing the consumption history data.
+            consumption_history_data (list): A list of ConsumptionHistoryData objects
+                representing the consumption history data.
         """
         for item in consumption_history_data:
             for bucket in item.series:
