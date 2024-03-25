@@ -15,7 +15,7 @@ from citycom_mv_api.models.exceptions import LoginError
 from citycom_mv_api.models.jwt import JWT
 
 
-async def do_login(session: ClientSession, user_name, password: str) -> Optional[dict]:
+async def do_login(session: ClientSession, user_name, password: str) -> Optional[JWT]:
     """
     Perform the first login for a user.
 
