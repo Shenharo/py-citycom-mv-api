@@ -12,7 +12,7 @@ repository = "https://github.com/Shenharo/py-citycom-mv-api"
 keywords = ["python", "poetry", "api", "citcom","citcom-mv", "israel", "water", "meter"]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = ">=3.11,<4.0"
 mashumaro = "^3.12"
 requests = "^2.31.0"
 pkce = "^1.0.3"
