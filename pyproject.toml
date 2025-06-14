@@ -12,7 +12,7 @@ repository = "https://github.com/Shenharo/py-citycom-mv-api"
 keywords = ["python", "poetry", "api", "citcom","citcom-mv", "israel", "water", "meter"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.13"
 mashumaro = "^3.12"
 requests = "^2.31.0"
 pkce = "^1.0.3"
@@ -22,7 +22,7 @@ cachetools="^5.3.3"
 loguru = "^0.7.2"
 pytz = "^2024.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "8.1.1"
 pytest-cov = "^4.1.0"
 ruff = "^0.3.0"

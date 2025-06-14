@@ -28,8 +28,13 @@ async def do_login(session: ClientSession, user_name, password: str) -> Optional
     """
 
     try:
+        headers = {"Content-Type": "application/json", "Accept": "application/json, text/plain, */*"}
         response = await commons.send_post_request(
-            session, url=LOGIN_URL, data={"grant_type": "password", "username": user_name, "password": password}
+            session, url=LOGIN_URL, headers=headers, json_data={
+            "grant_type": "password",
+             "username": user_name,
+             "password": password
+             }
         )
         # Get the first factor ID and state token
         return JWT.from_dict(response)

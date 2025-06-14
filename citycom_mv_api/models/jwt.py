@@ -7,10 +7,10 @@ from mashumaro import DataClassDictMixin
 class JWT(DataClassDictMixin):
     """JWT Token"""
 
-    access_token: str
-    refresh_token: str
-    token_type: str
-    expires_in: int
+    access_token: str = None
+    refresh_token: str = None
+    token_type: str = None
+    expires_in: int = None
     expires: str = field(default=None, metadata={"alias": ".expires"})
 
     def __eq__(self, other):
