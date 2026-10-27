@@ -10,8 +10,9 @@ from loguru import logger
 from citycom_mv_api import data, login
 from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
-from citycom_mv_api.models.exceptions import LoginError
+from citycom_mv_api.models.exceptions import LoginError, TokenExpiredError
 from citycom_mv_api.models.jwt import JWT
+from citycom_mv_api.models.login_challenge import LoginChallenge
 from citycom_mv_api.models.Reading import MeterReadings
 from citycom_mv_api.models.TimePeriodOptions import TimePeriodOptions
 
@@ -46,6 +47,7 @@ class CityComMVClient:
         self._login_response: Optional[str] = None  # Response from the login attempt
         self._contract_id: Optional[str] = None  # Contract ID associated with the instance
         self._meter_id: Optional[str] = None  # meter id number associated with the instance
+        self._pending_challenge: Optional[LoginChallenge] = None  # login waiting for a 2FA code
 
     def _shutdown(self):
         if not self._session.closed:
@@ -110,13 +112,40 @@ class CityComMVClient:
     # Login/Token Flow
     # ----------------
 
-    async def login(self):
+    async def login(self, channel: str = "sms") -> Optional[LoginChallenge]:
         """
-        Login with the provided user and password.
+        Start a login with the provided user and password.
+
+        Citycom requires 2FA: a code is sent via `channel` ("sms" or "email") and a LoginChallenge is
+        returned. Complete the login with verify_2fa_code(code). Returns None if no code was needed.
         """
-        jwt_token = await login.do_login(self._session, self._user_name, self._password)
-        self._token = jwt_token
+        result = await login.start_login(self._session, self._user_name, self._password, channel)
+        if isinstance(result, LoginChallenge):
+            self._pending_challenge = result
+            return result
+        self._token = result
         self.logged_in = True
+        return None
+
+    async def verify_2fa_code(self, code: str) -> JWT:
+        """Complete the login started by login() with the code that was sent."""
+        if not self._pending_challenge:
+            raise LoginError(-1, "No pending login, call login() first")
+        self._token = await login.verify_2fa_code(self._session, self._pending_challenge.pending_token, code)
+        self._pending_challenge = None
+        self.logged_in = True
+        return self._token
+
+    async def send_new_2fa_code(self, channel: str = "sms") -> Optional[str]:
+        """Send a new code for the pending login. Returns the masked contact it was sent to."""
+        if not self._pending_challenge:
+            raise LoginError(-1, "No pending login, call login() first")
+        return await login.send_new_2fa_code(self._session, self._pending_challenge.pending_token, channel)
+
+    @property
+    def token_expires_at(self) -> Optional[datetime.datetime]:
+        """When the current token expires, or None if there is no token."""
+        return login.expires_at(self._token)
 
     async def manual_login(self):
         """
@@ -147,16 +176,12 @@ class CityComMVClient:
 
     async def check_token(self) -> bool:
         """
-        Check the validity of the jwt.py token and refresh in the case of expired signature errors.
+        Check the validity of the token. Raises TokenExpiredError when it expired.
         """
-        if login.is_expired(self._token) or login.is_about_to_expire(self._token):
-            logger.debug("jwt.py token expired, refreshing token")
-            self._token=await login.do_login(self._session, self._user_name, self._password)
-        # elif login.is_about_to_expire(self._token):
-        #     logger.debug("jwt.py token expired, refreshing token")
-        #     self.logged_in = False
-        #     await self.refresh_token()
-
+        if login.is_expired(self._token):
+            # Citycom issues no refresh token, and a new login needs a 2FA code.
+            self.logged_in = False
+            raise TokenExpiredError()
         return True
 
     # citycom_mv_api returns invalid grant when called for a refresh token, so we just login again

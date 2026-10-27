@@ -24,13 +24,17 @@ async def main():
             await client.load_token_from_file(token_json_file)
         else:
             try:
-                await client.login()
+                challenge = await client.login(channel="sms")  # or "email"
+                if challenge:
+                    code = input(f"Enter the code sent to {challenge.masked_contact}: ")
+                    await client.verify_2fa_code(code)
                 await client.save_token_to_file(token_json_file)
             except LoginError as err:
                 logger.error(f"Failed Login: (Code {err.code}): {err.error}")
                 raise
 
-        # refresh token example- currently not implemented, it just logins again
+        # Tokens last 10 hours and cannot be refreshed; check_token raises TokenExpiredError
+        # once expired, and a new login with a 2FA code is needed.
         token = client.get_token()
         await client.check_token()
         new_token = client.get_token()

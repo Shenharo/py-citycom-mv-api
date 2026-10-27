@@ -18,8 +18,9 @@ def add_auth_bearer_to_headers(headers: dict[str, str], token: str) -> dict[str,
     headers (dict): The headers dictionary to be modified.
     token (str): The JWT token to be added to the headers.
     Returns:
-    dict: The modified headers dictionary with the JWT token added.
+    dict: A copy of the headers dictionary with the JWT token added.
     """
+    headers = dict(headers)
     headers["Authorization"] = f"Bearer {token}"
     return headers
 

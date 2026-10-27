@@ -25,6 +25,8 @@ CITYCOM_MV_WEBSITE = "https://citycom-mv.com"
 
 BASE_URL = f"{CITYCOM_MV_WEBSITE}/api/api"
 LOGIN_URL = f"{BASE_URL}/account/login"
+VERIFY_2FA_URL = f"{BASE_URL}/account/verify-2fa-code"
+SEND_NEW_2FA_URL = f"{BASE_URL}/account/send-new-2fa-code"
 UPDATE_USER_LOGIN_URL = f"{BASE_URL}/user/updateUserLogin"
 USER_INFO_URL = f"{BASE_URL}/user/info"
 ALERT_TYPES_URL = f"{BASE_URL}/lookups/alertTypes"
