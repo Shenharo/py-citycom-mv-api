@@ -8,6 +8,7 @@ from aiohttp import ClientSession
 
 from citycom_mv_api import data, login
 from citycom_mv_api.models.Alert import Alert
+from citycom_mv_api.models.AlertType import AlertType
 from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
 from citycom_mv_api.models.exceptions import LoginError, TokenExpiredError
@@ -94,6 +95,11 @@ class CityComMVClient:
         assert meter_id, "meter id number must be provided"
 
         return await data.get_active_alerts(self._session, self._token, meter_id)
+
+    async def get_alert_types(self) -> list[AlertType]:
+        """Retrieve the alert types lookup, to turn Alert.alert_type_id into a title."""
+        await self.check_token()
+        return await data.get_alert_types(self._session, self._token)
 
     async def get_historical_data(self,  meter_id: Optional[str] = None,
                                  time_period: TimePeriodOptions = TimePeriodOptions.DAILY,
