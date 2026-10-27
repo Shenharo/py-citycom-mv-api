@@ -5,9 +5,9 @@ from typing import Optional
 
 import aiohttp
 from aiohttp import ClientSession
-from loguru import logger
 
 from citycom_mv_api import data, login
+from citycom_mv_api.models.Alert import Alert
 from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
 from citycom_mv_api.models.exceptions import LoginError, TokenExpiredError
@@ -84,6 +84,16 @@ class CityComMVClient:
         response = await data.get_last_meter_reading(self._session, self._token, meter_id)
         if response:
             return response
+
+    async def get_active_alerts(self, meter_id: Optional[str] = None) -> list[Alert]:
+        """Retrieve the active alerts (leak, abnormal flow...) of a meter."""
+        await self.check_token()
+        if not meter_id:
+            meter_id = self._meter_id
+
+        assert meter_id, "meter id number must be provided"
+
+        return await data.get_active_alerts(self._session, self._token, meter_id)
 
     async def get_historical_data(self,  meter_id: Optional[str] = None,
                                  time_period: TimePeriodOptions = TimePeriodOptions.DAILY,
