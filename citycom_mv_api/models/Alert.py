@@ -19,6 +19,8 @@ class Alert(DataClassDictMixin):
     status_id: Optional[int] = field(default=None, metadata={"alias": "alertStatusId"})
     description: Optional[str] = field(default=None, metadata={"alias": "description"})
     start_date: Optional[datetime] = field(default=None, metadata={"alias": "startDate"})
+    # The citycom web app reads the alert type and this date from each active alert.
+    date: Optional[datetime] = field(default=None, metadata={"alias": "date"})
     raw: dict[str, Any] = field(default_factory=dict, metadata={"alias": "_raw"})
 
     @classmethod
