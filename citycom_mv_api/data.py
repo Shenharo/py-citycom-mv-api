@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 
 from aiohttp import ClientSession
-from cachetools import TTLCache, cached
 from loguru import logger
 
 from citycom_mv_api import commons
@@ -21,10 +20,6 @@ from citycom_mv_api.models.Meter import Meter
 from citycom_mv_api.models.Reading import MeterReadings
 from citycom_mv_api.models.TimePeriodOptions import TimePeriodOptions
 
-cache = TTLCache(maxsize=100, ttl=900)
-
-
-@cached(cache)
 async def get_customer(session: ClientSession, token: JWT) -> Optional[CustomerInformation]:
     """Get customer data response from API."""
     headers = commons.add_auth_bearer_to_headers(HEADERS_WITH_AUTH, token.access_token)
