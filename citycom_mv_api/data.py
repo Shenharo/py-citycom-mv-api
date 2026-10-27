@@ -7,6 +7,7 @@ from loguru import logger
 from citycom_mv_api import commons
 from citycom_mv_api.const import (
     ACTIVE_ALERTS_URL,
+    ALERT_TYPES_URL,
     CONSUMPTION_URL,
     CONSUMPTION_URL_DATE_PARAMS,
     HEADERS_WITH_AUTH,
@@ -14,6 +15,7 @@ from citycom_mv_api.const import (
     WATER_SUMMARY_URL,
 )
 from citycom_mv_api.models.Alert import Alert, parse_alerts
+from citycom_mv_api.models.AlertType import AlertType
 from citycom_mv_api.models.ConsumptionHistoryData import ConsumptionHistoryData
 from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
@@ -64,6 +66,15 @@ async def get_active_alerts(session: ClientSession, token: JWT, meter_id: str) -
 
     logger.debug(f"Response: {response}")
     return parse_alerts(response)
+
+
+async def get_alert_types(session: ClientSession, token: JWT) -> list[AlertType]:
+    """Get the alert types lookup (readable titles for alert type ids)."""
+    headers = commons.add_auth_bearer_to_headers(HEADERS_WITH_AUTH, token.access_token)
+    response = await commons.send_get_request(session=session, url=ALERT_TYPES_URL, headers=headers)
+
+    logger.debug(f"Response: {response}")
+    return [AlertType.from_dict(item) for item in response or [] if isinstance(item, dict)]
 
 
 async def get_historical_data(session: ClientSession, token: JWT, meter_id: str,

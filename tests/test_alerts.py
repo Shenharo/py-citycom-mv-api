@@ -10,6 +10,7 @@ from citycom_mv_api.models.jwt import JWT
 
 FUTURE = (datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=10)).isoformat()
 ALERT = {"alertId": 5, "meterId": 111, "alertTypeId": 2, "alertTypeName": "Leak", "extra": "x"}
+WEB_ALERT = {"alertTypeId": 7, "date": "2026-10-27T08:30:00"}
 
 
 class FakeResponse:
@@ -60,3 +61,20 @@ def test_get_meter_by_id_matches_meter_id():
 
     assert asyncio.run(data.get_meter_by_id(session, token, "222")).meter_id == 222
     assert asyncio.run(data.get_meter_by_id(session, token, "999")) is None
+
+
+def test_alert_as_returned_by_the_web_app_has_type_and_date():
+    alert = parse_alerts([WEB_ALERT])[0]
+    assert alert.alert_type_id == 7
+    assert alert.date == datetime.datetime(2026, 10, 27, 8, 30)
+
+
+def test_client_get_alert_types():
+    session = FakeSession([{"alertTypeId": 7, "title": "Leak", "meterType": 2, "other": 1}])
+    client = CityComMVClient("user", "pass", session)
+    client._token = JWT(access_token="a", expires=FUTURE)
+
+    types = asyncio.run(client.get_alert_types())
+
+    assert session.urls[0].endswith("/lookups/alertTypes")
+    assert [(t.alert_type_id, t.title) for t in types] == [(7, "Leak")]
