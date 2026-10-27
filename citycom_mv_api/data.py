@@ -6,12 +6,14 @@ from loguru import logger
 
 from citycom_mv_api import commons
 from citycom_mv_api.const import (
+    ACTIVE_ALERTS_URL,
     CONSUMPTION_URL,
     CONSUMPTION_URL_DATE_PARAMS,
     HEADERS_WITH_AUTH,
     USER_INFO_URL,
     WATER_SUMMARY_URL,
 )
+from citycom_mv_api.models.Alert import Alert, parse_alerts
 from citycom_mv_api.models.ConsumptionHistoryData import ConsumptionHistoryData
 from citycom_mv_api.models.ConsumptionTimeSeries import ConsumptionTimeSeries
 from citycom_mv_api.models.CustomerInformation import CustomerInformation
@@ -19,6 +21,7 @@ from citycom_mv_api.models.jwt import JWT
 from citycom_mv_api.models.Meter import Meter
 from citycom_mv_api.models.Reading import MeterReadings
 from citycom_mv_api.models.TimePeriodOptions import TimePeriodOptions
+
 
 async def get_customer(session: ClientSession, token: JWT) -> Optional[CustomerInformation]:
     """Get customer data response from API."""
@@ -35,7 +38,7 @@ async def get_meter_by_id(session: ClientSession, token: JWT, meter_id: str) -> 
     customer = await get_customer(session, token)
     for current_property in customer.properties:
         for meter in current_property.meters:
-            if meter.id == meter_id:
+            if str(meter.meter_id) == str(meter_id):
                 return meter
     logger.warning(f"cannot find a meter with id: {meter_id}")
     return None
@@ -51,6 +54,17 @@ async def get_last_meter_reading(session: ClientSession, token: JWT, meter_id: s
 
     logger.debug(f"Response: {response}")
     return MeterReadings.from_dict(response)
+
+async def get_active_alerts(session: ClientSession, token: JWT, meter_id: str) -> list[Alert]:
+    """Get the active alerts of a meter."""
+    headers = commons.add_auth_bearer_to_headers(HEADERS_WITH_AUTH, token.access_token)
+    response = await commons.send_get_request(
+        session=session, url=ACTIVE_ALERTS_URL.format(meter_id=meter_id), headers=headers
+    )
+
+    logger.debug(f"Response: {response}")
+    return parse_alerts(response)
+
 
 async def get_historical_data(session: ClientSession, token: JWT, meter_id: str,
                               time_period: TimePeriodOptions = TimePeriodOptions.DAILY,
